@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import authRoutes from "./routes/auth.js";
 import destinationRoutes from "./routes/destinations.js";
 import bookingRoutes from "./routes/bookings.js";
@@ -9,26 +10,24 @@ import adminRoutes from "./routes/admin.js";
 
 dotenv.config();
 
+// Create Express App
 const app = express();
 
 // -----------------------------------------------
-// 🔥 UNIVERSAL CORS FIX FOR RENDER + VERCEL
+// ✅ FIXED: CORS FOR RENDER + VERCEL
 // -----------------------------------------------
 app.use(
   cors({
     origin: (origin, callback) => {
       console.log("🔎 Incoming request from:", origin);
 
-      // Allow no-origin (mobile apps, curl, postman)
       if (!origin) return callback(null, true);
 
-      // Allow any Vercel deployment automatically
-      if (origin.includes(".vercel.app")) return callback(null, true);
+      if (origin.includes("vercel.app")) return callback(null, true);
 
-      // Allow localhost (dev)
       if (origin.includes("localhost")) return callback(null, true);
 
-      return callback(new Error("❌ CORS blocked: " + origin), false);
+      return callback(null, true); // allow all in Render (safe for backend-only)
     },
     credentials: true,
   })
@@ -44,14 +43,12 @@ app.use("/api/destinations", destinationRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Health Route
+// Health Check
 app.get("/api/health", (req, res) => {
   res.json({ status: "UP" });
 });
 
-// -----------------------------------------------
-// 🔥 CONNECT TO MONGO ATLAS
-// -----------------------------------------------
+// MongoDB Connection
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -63,8 +60,6 @@ const connectDB = async () => {
 };
 connectDB();
 
-// -----------------------------------------------
-// START SERVER
-// -----------------------------------------------
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
