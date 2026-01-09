@@ -10,28 +10,26 @@ import adminRoutes from "./routes/admin.js";
 
 dotenv.config();
 
-// Create Express App
 const app = express();
 
 // -----------------------------------------------
-// ✅ FIXED: CORS FOR RENDER + VERCEL
+// ✅ GLOBAL CORS FIX FOR RENDER + VERCEL
 // -----------------------------------------------
 app.use(
   cors({
-    origin: (origin, callback) => {
-      console.log("🔎 Incoming request from:", origin);
-
-      if (!origin) return callback(null, true);
-
-      if (origin.includes("vercel.app")) return callback(null, true);
-
-      if (origin.includes("localhost")) return callback(null, true);
-
-      return callback(null, true); // allow all in Render (safe for backend-only)
-    },
-    credentials: true,
+    origin: "*",  
+    methods: "GET,POST,PUT,DELETE,PATCH",
+    allowedHeaders: "Content-Type, Authorization",
+    credentials: false,
   })
 );
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH");
+  next();
+});
 
 // Body Parsers
 app.use(express.json());
